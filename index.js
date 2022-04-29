@@ -27,9 +27,20 @@ async function run() {
     const productCollection = client.db("eshop").collection("products");
     console.log("Connected")
     app.get("/products", async(req, res)=>{
+      const page = parseInt(req.query.page)
+      const size = parseInt(req.query.size)
+      console.log('query', req.query)
       const query ={}
       const cursor = productCollection.find(query);
-      const products = await cursor.toArray();
+      let products
+      if(page || size)
+      {
+        products = await cursor.skip(page*size).limit(size).toArray();
+      }
+      else
+      {
+        products = await cursor.toArray();
+      }
       res.send(products)
       // console.log(products)
     })
@@ -37,7 +48,7 @@ async function run() {
     app.get("/productcount", async(req,res)=>{
       const query = {}
       const cursor = productCollection.find(query)
-      const count = await cursor.count();
+      const count = await collection.estimatedDocumentCount();
       // res.json(count)
       res.json({count})
     })
